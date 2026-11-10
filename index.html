@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Angela Fong</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Angela Fong — Mathematics and Computer Science at UBC. Automation, data products and multiplayer games.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500;700&display=swap">
+<style>
+/* Layout: a working math notebook — a main proof column plus a right margin for handwritten ballpoint annotations. Hero = the student drawn as a graph G = (V, E). */
+:root{
+  --paper:#F3F4F8;        /* cool notebook paper */
+  --paper-2:#E8EAF2;      /* ruled / sunken */
+  --ink:#191C35;          /* indigo ink */
+  --ink-soft:#575C7A;     /* pencil */
+  --pen:#2546E8;          /* ballpoint blue: annotations + links */
+  --marker:#FFE76A;       /* highlighter */
+  --rule:#C9CDE0;
+  --node-skill:#FFFFFF;
+  --f-display:"STIX Two Text","Cambria","Times New Roman",serif;
+  --f-body:"Instrument Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --f-hand:"Caveat","Segoe Print","Bradley Hand",cursive;
+  --s-1:.8125rem; --s0:1rem; --s1:1.1875rem; --s2:1.5rem; --s3:2.125rem; --s4:clamp(2.75rem,6vw,4.75rem);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#12141F; --paper-2:#1A1D2C; --ink:#E7E9F4; --ink-soft:#9DA2C0;
+    --pen:#8EA0FF; --marker:rgba(255,226,90,.28); --rule:#2C3047; --node-skill:#1A1D2C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#12141F; --paper-2:#1A1D2C; --ink:#E7E9F4; --ink-soft:#9DA2C0;
+  --pen:#8EA0FF; --marker:rgba(255,226,90,.28); --rule:#2C3047; --node-skill:#1A1D2C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{ margin:0;
+  background:var(--paper); color:var(--ink);
+  font-family:var(--f-body); font-size:var(--s0); line-height:1.6;
+  background-image:radial-gradient(var(--rule) .8px, transparent .8px);
+  background-size:22px 22px; background-attachment:fixed;
+}
+a{color:var(--pen); text-underline-offset:3px; text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:2px solid var(--pen); outline-offset:3px; border-radius:2px}
+.wrap{
+  max-width:1140px; margin:0 auto;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* top bar */
+.bar{display:flex; justify-content:space-between; align-items:center; gap:16px; padding-block:20px; flex-wrap:wrap;
+  font-family:var(--f-mono); font-size:var(--s-1); color:var(--ink-soft)}
+.bar nav{display:flex; gap:18px; flex-wrap:wrap}
+.bar nav a{color:var(--ink-soft); text-decoration:none}
+.bar nav a:hover{color:var(--pen)}
+
+/* hero */
+.hero{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:40px; align-items:center; padding-block:24px 56px}
+.eyebrow{font-family:var(--f-mono); font-size:var(--s-1); letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft)}
+h1{font-family:var(--f-display); font-weight:600; font-size:var(--s4); line-height:1; letter-spacing:-.02em; margin:.3em 0 .25em; text-wrap:balance}
+.lede{font-size:var(--s1); max-width:34ch; color:var(--ink); margin:0 0 1.4em}
+.hl{background:linear-gradient(transparent 58%, var(--marker) 58%, var(--marker) 92%, transparent 92%); padding:0 .1em}
+.thm{font-family:var(--f-display); font-size:var(--s1); line-height:1.5; margin:0; max-width:44ch}
+.thm b{font-weight:700; font-style:normal}
+.thm i{font-style:italic}
+.cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:28px}
+.btn{font-family:var(--f-mono); font-size:var(--s-1); padding:10px 16px; border:1.5px solid var(--ink); color:var(--ink); background:transparent; text-decoration:none; cursor:pointer; border-radius:2px}
+.btn.primary{background:var(--ink); color:var(--paper)}
+.btn:hover{border-color:var(--pen); color:var(--pen); text-decoration:none}
+.btn.primary:hover{background:var(--pen); color:var(--paper)}
+
+figure.graph{margin:0; background:var(--paper); border:1.5px solid var(--ink); position:relative}
+#g{display:block; width:100%; height:440px; touch-action:none; cursor:grab}
+#g.dragging{cursor:grabbing}
+figcaption{font-family:var(--f-display); font-size:var(--s-1); padding:10px 14px; border-top:1px solid var(--rule); color:var(--ink-soft)}
+figcaption b{color:var(--ink)}
+.legend{position:absolute; top:10px; left:12px; font-family:var(--f-mono); font-size:11px; color:var(--ink-soft); display:flex; gap:14px; pointer-events:none}
+.legend span::before{content:""; display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:-1px; border:1.5px solid var(--ink)}
+.legend .p::before{background:var(--ink)}
+.legend .s::before{background:var(--node-skill)}
+.hand{font-family:var(--f-hand); color:var(--pen); font-size:1.45rem; line-height:1.15; font-weight:500}
+.hero-note{position:absolute; right:14px; bottom:54px; transform:rotate(-3deg); pointer-events:none; text-align:right}
+
+/* sections */
+.sec{display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:48px; padding-block:56px; border-top:1px solid var(--rule)}
+.sec h2{font-family:var(--f-display); font-weight:600; font-size:var(--s3); line-height:1.15; margin:0 0 .6em; text-wrap:balance}
+.sec h2 .num{font-family:var(--f-mono); font-size:var(--s-1); font-weight:400; color:var(--ink-soft); display:block; margin-bottom:.6em; letter-spacing:.06em}
+.main{min-width:0}
+.main p{max-width:65ch}
+.note{min-width:0; padding-top:44px}
+.note .hand{transform:rotate(-1.5deg); display:block}
+.note .hand + .hand{margin-top:22px}
+.arrow{display:inline-block}
+
+/* definition list */
+.defs{display:grid; grid-template-columns:max-content 1fr; gap:10px 24px; margin:24px 0 0}
+.defs dt{font-family:var(--f-mono); font-size:var(--s-1); color:var(--ink-soft); padding-top:2px}
+.defs dd{margin:0}
+
+/* feature */
+.feature-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
+.zh{font-family:var(--f-display); font-size:var(--s2); color:var(--ink-soft)}
+.status{font-family:var(--f-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--pen); color:var(--pen); padding:3px 8px; border-radius:20px}
+.flow{list-style:none; padding:0; margin:22px 0; display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; counter-reset:f}
+.flow li{counter-increment:f; font-size:var(--s-1); padding:10px 8px; border-top:2px solid var(--ink); line-height:1.3}
+.flow li::before{content:counter(f); display:block; font-family:var(--f-mono); color:var(--ink-soft); font-size:11px; margin-bottom:4px}
+.flow li.loop{border-top-color:var(--pen)}
+
+.demo{border:1.5px solid var(--ink); background:var(--paper-2); margin-top:28px}
+.demo-top{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--rule); flex-wrap:wrap}
+.demo-top .eyebrow{color:var(--ink)}
+.seg{display:inline-flex; border:1.5px solid var(--ink); border-radius:2px}
+.seg button{font-family:var(--f-mono); font-size:12px; background:transparent; color:var(--ink); border:0; padding:5px 10px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+.demo-body{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0}
+.q{padding:18px 16px; min-width:0}
+.q + .q{border-left:1px solid var(--rule)}
+.q h3{font-family:var(--f-display); font-weight:600; font-size:var(--s1); margin:0 0 14px; line-height:1.3}
+.players{display:grid; gap:8px}
+.pl{display:grid; grid-template-columns:62px minmax(0,1fr); align-items:center; gap:10px; font-size:var(--s-1)}
+.pl .who{font-family:var(--f-mono); font-size:12px; color:var(--ink-soft)}
+.pl.you .who{color:var(--pen); font-weight:500}
+.chips{display:flex; flex-wrap:wrap; gap:4px}
+.chip{font-size:12px; padding:3px 8px; border:1px solid var(--rule); background:var(--paper); color:var(--ink-soft); border-radius:20px; font-family:var(--f-body)}
+.chip.on{border-color:var(--ink); color:var(--ink); background:var(--marker)}
+button.chip{cursor:pointer}
+button.chip:hover{border-color:var(--pen)}
+.val{font-family:var(--f-mono); font-size:13px}
+input[type=range]{width:100%; accent-color:var(--pen)}
+.score{margin-top:16px; padding-top:12px; border-top:1px dashed var(--rule); display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap}
+.score .big{font-family:var(--f-display); font-size:2.4rem; font-weight:600; line-height:1; font-variant-numeric:tabular-nums}
+.score .formula{font-family:var(--f-mono); font-size:12px; color:var(--ink-soft); max-width:100%; overflow-wrap:anywhere}
+.demo-foot{padding:10px 16px; border-top:1px solid var(--rule); font-size:var(--s-1); color:var(--ink-soft)}
+
+.stack{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
+.tag{font-family:var(--f-mono); font-size:11.5px; padding:2px 8px; border:1px solid var(--rule); border-radius:2px; color:var(--ink-soft); background:var(--paper)}
+
+/* lemmas */
+.lemmas{display:grid; gap:36px}
+.lemma{scroll-margin-top:24px}
+.lemma .stmt{font-family:var(--f-display); font-size:var(--s1); margin:0 0 6px; line-height:1.45}
+.lemma .stmt b{font-weight:700}
+.lemma .stmt i{font-style:italic}
+.lemma .meta{font-family:var(--f-mono); font-size:12px; color:var(--ink-soft); margin-bottom:8px}
+.proof{margin:0; padding:0; list-style:none}
+.proof li{padding-left:1.1em; position:relative; margin:4px 0; max-width:65ch}
+.proof li::before{content:"–"; position:absolute; left:0; color:var(--ink-soft)}
+.proof-label{font-family:var(--f-display); font-style:italic; margin-right:.4em}
+.qed{display:flex; justify-content:flex-end; font-family:var(--f-display); max-width:65ch; margin-top:-4px}
+.metric{font-family:var(--f-mono); font-size:12.5px; background:var(--marker); color:var(--ink); padding:1px 6px}
+.lemma.flash{animation:flash 1.4s ease}
+@keyframes flash{0%{background:var(--marker)}100%{background:transparent}}
+@media (prefers-reduced-motion: reduce){.lemma.flash{animation:none}}
+
+/* timeline */
+.tl{list-style:none; margin:0; padding:0; display:grid; gap:28px}
+.tl li{display:grid; grid-template-columns:150px minmax(0,1fr); gap:24px}
+.tl time{font-family:var(--f-mono); font-size:12.5px; color:var(--ink-soft); padding-top:4px; font-variant-numeric:tabular-nums}
+.tl h3{font-family:var(--f-display); font-size:var(--s1); font-weight:600; margin:0; line-height:1.3}
+.tl .org{color:var(--ink-soft); font-size:var(--s-1); margin-bottom:6px}
+.tl ul{margin:0; padding-left:1.1em}
+.tl ul li{display:list-item; margin:3px 0; max-width:62ch}
+
+/* toolkit as a matrix */
+.matrix{overflow-x:auto}
+table{border-collapse:collapse; width:100%; min-width:520px}
+th,td{text-align:left; padding:12px 14px 12px 0; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:var(--f-mono); font-size:12px; font-weight:500; color:var(--ink-soft); white-space:nowrap; width:170px}
+td{font-size:var(--s0)}
+
+/* courses */
+.courses{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0 28px}
+.course{display:grid; grid-template-columns:76px minmax(0,1fr) auto; gap:10px; padding:9px 0; border-bottom:1px solid var(--rule); align-items:baseline; font-size:var(--s-1)}
+.course code{font-family:var(--f-mono); font-size:12px; color:var(--ink-soft)}
+.course .g{font-family:var(--f-mono); font-size:11px; color:var(--ink)}
+.course .g.top{background:var(--marker); padding:0 4px}
+.course .g.ip{color:var(--pen)}
+.subhead{font-family:var(--f-mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin:28px 0 6px}
+.certs{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:8px}
+.cert{display:flex; gap:14px; align-items:flex-start; padding:16px; border:1.5px dashed var(--ink); min-width:0}
+.cert > div{min-width:0}
+.cert .seal{font-family:var(--f-display); font-size:2rem; line-height:1}
+
+/* contact */
+.qedbox{padding-block:72px 40px; border-top:1.5px solid var(--ink)}
+.qedbox h2{font-family:var(--f-display); font-size:var(--s4); font-weight:600; margin:0; line-height:1}
+.contact{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; margin-top:36px}
+.contact > div{min-width:0}
+.contact .k{font-family:var(--f-mono); font-size:12px; color:var(--ink-soft); margin-bottom:6px}
+.contact .v{font-family:var(--f-display); font-size:var(--s1); overflow-wrap:anywhere}
+.copy{margin-left:8px; font-family:var(--f-mono); font-size:11px; border:1px solid var(--rule); background:transparent; color:var(--ink-soft); padding:2px 8px; cursor:pointer; border-radius:2px}
+.copy:hover{color:var(--pen); border-color:var(--pen)}
+footer{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-block:28px 40px; font-family:var(--f-mono); font-size:12px; color:var(--ink-soft)}
+.tomb{font-size:1.4rem; color:var(--ink)}
+
+@media (max-width: 960px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .sec{grid-template-columns:minmax(0,1fr); gap:12px}
+  .note{padding-top:0}
+  .note .hand{transform:rotate(-1deg)}
+  .flow{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width: 640px){
+  #g{height:360px}
+  .demo-body{grid-template-columns:minmax(0,1fr)}
+  .q + .q{border-left:0; border-top:1px solid var(--rule)}
+  .tl li{grid-template-columns:minmax(0,1fr); gap:4px}
+  .contact{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .defs{grid-template-columns:minmax(0,1fr); gap:2px}
+  .defs dd{margin-bottom:10px}
+  .hero-note{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="bar">
+    <span>A. Fong · Vancouver ⇄ Hong Kong</span>
+    <nav aria-label="Sections">
+      <a href="#about">§1 About</a>
+      <a href="#click">§2 Do We Click?</a>
+      <a href="#work">§3 Projects</a>
+      <a href="#exp">§4 Experience</a>
+      <a href="#contact">∎ Contact</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">BSc Combined Major · Mathematics &amp; Computer Science · UBC '27</div>
+      <h1>Angela Fong</h1>
+      <p class="lede">I build <span class="hl">automation, data products and multiplayer games</span>, and I like proving they work.</p>
+      <p class="thm"><b>Theorem 1.</b> <i>Given a messy real-world process and a free tier, Angela ships a tool that people actually use.</i></p>
+      <p class="thm" style="margin-top:.5em;color:var(--ink-soft)"><i>Proof.</i> See §2–§4.</p>
+      <div class="cta">
+        <a class="btn primary" href="#click">Play the scoring demo</a>
+        <a class="btn" href="https://github.com/AngelaFong264291" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn" href="https://linkedin.com/in/angela-fong-68b462324" target="_blank" rel="noopener">LinkedIn ↗</a>
+      </div>
+    </div>
+    <figure class="graph">
+      <div class="legend" aria-hidden="true"><span class="p">project</span><span class="s">tool</span></div>
+      <canvas id="g" aria-label="Interactive graph linking Angela's projects to the tools used in each. Select a project vertex to jump to it."></canvas>
+      <div class="hero-note hand" aria-hidden="true">drag me ↙<br><span style="font-size:1.1rem">(MATH 442, A+)</span></div>
+      <figcaption><b>Fig. 1.</b> G = (V, E), the bipartite graph of my projects and the tools behind them. <span id="gstats">|V| = 0, |E| = 0</span>. Drag a vertex; click a project to open its proof.</figcaption>
+    </figure>
+  </section>
+
+  <!-- §1 -->
+  <section class="sec" id="about">
+    <div class="main">
+      <h2><span class="num">§1 · DEFINITIONS</span>Who I am, stated precisely</h2>
+      <p>I'm a fourth-year student in UBC's combined Mathematics and Computer Science program. I came to Vancouver from Hong Kong, and I spend summers back there building internal tools. My favourite problems sit where a proof meets a product: scoring rules that have to be fair, forecasts that have to be explained, and records that have to stay correct across thousands of rows.</p>
+      <dl class="defs">
+        <dt>status</dt><dd>4th year · graduating May 2027 · CGPA 3.7 / 4.33</dd>
+        <dt>looking for</dt><dd>New-grad and internship roles in software, data and ML engineering</dd>
+        <dt>languages</dt><dd>English · Cantonese · Mandarin</dd>
+        <dt>awards</dt><dd>Outstanding International Student Award, UBC (2023) · Stream Winner, ProduHacks 2026</dd>
+        <dt>off the clock</dt><dd>Marketing for the Actuarial Science and Table Tennis clubs; ex-event coordinator, UBC Musical Theatre Troupe</dd>
+      </dl>
+    </div>
+    <aside class="note">
+      <span class="hand">math + CS:<br>you can build it <u>and</u> prove why it works</span>
+      <span class="hand">→ see Lemma 3.1, a model tested only on data it never saw</span>
+    </aside>
+  </section>
+
+  <!-- §2 -->
+  <section class="sec" id="click">
+    <div class="main">
+      <h2><span class="num">§2 · MAIN RESULT · IN DEVELOPMENT</span>
+        <span class="feature-head">Do We Click? <span class="zh">《夾唔夾》</span> <span class="status">building now</span></span>
+      </h2>
+      <p>A real-time web game for 2–6 friends. Share one link, answer ten questions together, and the game measures how in sync your group is. Questions are generated from about 60 themed word banks and ~20 templates, so rounds rarely repeat. The interface works in Cantonese and English, and players in the same room can each pick their own language because answers are stored as item IDs, not text.</p>
+      <ol class="flow" aria-label="One round, in order">
+        <li>Home: create or join a 4-digit room</li>
+        <li>Lobby: share link, host starts</li>
+        <li class="loop">Answer: 10–15 s per question</li>
+        <li class="loop">Reveal: answers flip, formula shown</li>
+        <li class="loop">Repeat ×10</li>
+        <li>Your personal sync ranking</li>
+        <li>Group score, title, share image</li>
+      </ol>
+
+      <div class="demo" id="demo">
+        <div class="demo-top">
+          <span class="eyebrow">Try the scoring rule · you are player 4</span>
+          <div class="seg" role="group" aria-label="Demo language">
+            <button type="button" id="lang-en" aria-pressed="true">EN</button>
+            <button type="button" id="lang-zh" aria-pressed="false">中</button>
+          </div>
+        </div>
+        <div class="demo-body">
+          <div class="q">
+            <h3 id="q1t">Which Hong Kong bun is most like you?</h3>
+            <div class="players" id="q1p"></div>
+            <div class="score"><span class="big" id="q1s">75</span><span class="formula" id="q1f"></span></div>
+          </div>
+          <div class="q">
+            <h3 id="q2t">How sexy is a pineapple bun? (0–10)</h3>
+            <div class="players" id="q2p"></div>
+            <div class="score"><span class="big" id="q2s">68</span><span class="formula" id="q2f"></span></div>
+          </div>
+        </div>
+        <div class="demo-foot" id="demofoot">Each question scores 0–100: find the consensus answer, score everyone against it, then average. If nobody agrees with anybody, the question scores 0.</div>
+      </div>
+
+      <div class="stack" aria-label="Stack">
+        <span class="tag">React + Vite</span><span class="tag">Firebase Realtime Database</span><span class="tag">Firebase anonymous auth</span><span class="tag">GitHub Pages</span><span class="tag">i18n (zh-HK / en)</span><span class="tag">$0 running cost</span>
+      </div>
+    </div>
+    <aside class="note">
+      <span class="hand">the slider rule is 100 / 70 / 40 / 0 by distance, so "close enough" still counts</span>
+      <span class="hand">known trade-off: in a 4-player room, a 2–2 split and a 2–1–1 split both score 50. Kept on purpose for simpler rules.</span>
+    </aside>
+  </section>
+
+  <!-- §3 -->
+  <section class="sec" id="work">
+    <div class="main">
+      <h2><span class="num">§3 · LEMMAS</span>Other things I've proven by building</h2>
+      <div class="lemmas">
+        <article class="lemma" id="p-flight">
+          <p class="stmt"><b>Lemma 3.1</b> (Flight Delay Forecasting). <i>Ten years of aviation data predicts delay to within six minutes on average.</i></p>
+          <div class="meta">Jan – Feb 2026 · personal project · <a href="https://github.com/AngelaFong264291/Flight-Delay-Forecasting-System" target="_blank" rel="noopener">code ↗</a></div>
+          <ul class="proof">
+            <li>Loaded ten years of U.S. Bureau of Transportation Statistics records (Aug 2013 – Aug 2023) into PostgreSQL and found delay patterns with window functions and aggregations.</li>
+            <li>Forecast each airline's average monthly delay at each airport. Trained on data up to Dec 2021 and tested on Jan 2022 – Aug 2023, so the model never sees the future.</li>
+            <li>Compared CatBoost, XGBoost and LightGBM; CatBoost won with <span class="metric">MAE ≈ 5.8 min</span>.</li>
+            <li>Built an interactive Streamlit app so anyone can query a forecast.</li>
+          </ul>
+          <div class="qed">∎</div>
+          <div class="stack"><span class="tag">PostgreSQL</span><span class="tag">SQL</span><span class="tag">CatBoost</span><span class="tag">XGBoost</span><span class="tag">LightGBM</span><span class="tag">Streamlit</span><span class="tag">Python</span></div>
+        </article>
+
+        <article class="lemma" id="p-synk">
+          <p class="stmt"><b>Lemma 3.2</b> (Synk). <i>A team project hub can be built, synced and demoed in one weekend.</i></p>
+          <div class="meta">Mar 2026 · ProduHacks · <strong>Stream winner, Notion Productivity</strong> · <a href="https://github.com/AngelaFong264291/Synk" target="_blank" rel="noopener">code ↗</a></div>
+          <ul class="proof">
+            <li>Designed the PocketBase data models and APIs for auth, workspaces and tasks, using its realtime API for live updates.</li>
+            <li>Built the React + TypeScript dashboard and Kanban board on a shared data layer.</li>
+            <li>Packaged the backend with Docker Compose so the team could run it with one command.</li>
+          </ul>
+          <div class="qed">∎</div>
+          <div class="stack"><span class="tag">React</span><span class="tag">TypeScript</span><span class="tag">PocketBase</span><span class="tag">Docker</span></div>
+        </article>
+
+        <article class="lemma" id="p-quiz">
+          <p class="stmt"><b>Lemma 3.3</b> (AI Quiz Generator). <i>Any page of notes can become a practice test.</i></p>
+          <div class="meta">personal project · <a href="https://github.com/AngelaFong264291/AI-quiz-generator" target="_blank" rel="noopener">code ↗</a></div>
+          <ul class="proof">
+            <li>Paste in study text and an LLM writes multiple-choice questions about it; you choose how many.</li>
+            <li>Answer in the app and get scored as you go. Built with Streamlit; published as a reusable GitHub template.</li>
+          </ul>
+          <div class="qed">∎</div>
+          <div class="stack"><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">LLM API</span></div>
+        </article>
+
+        <article class="lemma" id="p-recipe">
+          <p class="stmt"><b>Lemma 3.4</b> (Recipe Platform API). <i>A full social feature set fits in one clean REST API.</i></p>
+          <div class="meta">personal project · <a href="https://github.com/AngelaFong264291/recipe-upload-platform" target="_blank" rel="noopener">code ↗</a></div>
+          <ul class="proof">
+            <li>Designed and documented a REST API with JWT auth, recipe CRUD, image upload and search.</li>
+            <li>Added favourites, comments and 1–5 star ratings.</li>
+          </ul>
+          <div class="qed">∎</div>
+          <div class="stack"><span class="tag">JavaScript</span><span class="tag">REST API</span><span class="tag">JWT</span></div>
+        </article>
+
+        <article class="lemma" id="p-mind">
+          <p class="stmt"><b>Lemma 3.5</b> (MINDREMIND). <i>A wellness reminder lands better when it knows where you are and what's next on your calendar.</i></p>
+          <div class="meta">Apr 2025 · UBC WiCS Hackathon</div>
+          <ul class="proof">
+            <li>Co-built a React / Node.js app with location- and schedule-based notifications.</li>
+          </ul>
+          <div class="qed">∎</div>
+          <div class="stack"><span class="tag">React</span><span class="tag">Node.js</span></div>
+        </article>
+
+        <div class="lemma" id="p-party">
+          <div class="subhead" style="margin-top:0">Also built</div>
+          <ul class="proof">
+            <li><strong>Party Game App</strong> (Mar 2026 – present, in progress): a multiplayer mobile party game in Flutter and Supabase.</li>
+            <li><strong>Digital Shopping Tracker</strong> (Java): budget categories, purchases with 1–5 star ratings, spending charts and save/load to file. <a href="https://github.com/AngelaFong264291/Digital-Spending-Tracker" target="_blank" rel="noopener">code ↗</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <aside class="note">
+      <span class="hand">every lemma has a number you can check ✓</span>
+      <span class="hand">Corollary: CatBoost is my go-to for tabular data</span>
+    </aside>
+  </section>
+
+  <!-- §4 -->
+  <section class="sec" id="exp">
+    <div class="main">
+      <h2><span class="num">§4 · EXPERIENCE · MOST RECENT FIRST</span>Where I've applied it</h2>
+      <ol class="tl">
+        <li id="p-land">
+          <time>Jul – Aug 2026</time>
+          <div>
+            <h3>Technical Intern</h3>
+            <div class="org">Land Registry, HKSAR Government · Hong Kong</div>
+            <ul>
+              <li>Improved VBA automation and built a workflow that extracts structured data from Word documents into Excel for a land-record database.</li>
+              <li>Built a shared-drive monitor that flags new, updated and moved records for review.</li>
+              <li>Found and repaired broken hyperlinks across thousands of records.</li>
+            </ul>
+          </div>
+        </li>
+        <li id="p-221b">
+          <time>Jun – Aug 2025</time>
+          <div>
+            <h3>Research Engineering Intern</h3>
+            <div class="org">221b · Hong Kong</div>
+            <ul>
+              <li>Automated social media monitoring with n8n and the Gemini API to produce daily risk reports.</li>
+              <li>Built AI-assisted workflows that collect and summarise web data on industry trends and benchmarks.</li>
+              <li>Evaluated scraping tools and AI models, and documented the findings that shaped the architecture.</li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <time>Sep 2024 – May 2025</time>
+          <div>
+            <h3>Math Tutor</h3>
+            <div class="org">The Milky Way Education · Vancouver</div>
+            <ul><li>Tutored elementary and secondary students; average test scores rose 15%.</li></ul>
+          </div>
+        </li>
+        <li>
+          <time>Jun 2022 – Aug 2023</time>
+          <div>
+            <h3>Volunteer Math Tutor</h3>
+            <div class="org">Learning Buddies Network · Vancouver</div>
+            <ul><li>Built personalised study strategies with students.</li></ul>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <aside class="note">
+      <span class="hand">pattern: I find the boring manual task and make it run itself</span>
+    </aside>
+  </section>
+
+  <!-- §5 -->
+  <section class="sec" id="tools">
+    <div class="main">
+      <h2><span class="num">§5 · TOOLKIT</span>The tools behind the work</h2>
+      <div class="matrix">
+        <table>
+          <tbody>
+            <tr><th scope="row">Languages</th><td>Python, SQL, Java, JavaScript, R, C/C++, Dart</td></tr>
+            <tr><th scope="row">ML &amp; analytics</th><td>pandas, scikit-learn, CatBoost, SHAP, Azure AI Vision, Power BI, Excel</td></tr>
+            <tr><th scope="row">App &amp; web</th><td>React, Node.js, Flutter, HTML/CSS, REST APIs</td></tr>
+            <tr><th scope="row">Data &amp; backend</th><td>PostgreSQL, MySQL, MongoDB, Supabase, PocketBase, Firebase</td></tr>
+            <tr><th scope="row">Automation &amp; ops</th><td>Git, Docker, VBA, n8n, Gemini API</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="coursework"><span class="subhead" style="display:block;margin:28px 0 6px">Relevant coursework</span>Algorithms &amp; Data Structures · Machine Learning &amp; Data Mining · Graphs &amp; Networks · Probability · Computer Networking · Operating Systems · Natural Language Processing</p>
+
+      <div class="subhead">Certificates</div>
+      <div class="certs">
+        <div class="cert">
+          <span class="seal" aria-hidden="true">✓</span>
+          <div>
+            <strong>Introduction to Data Engineering</strong><br>IBM · Coursera course · May 2026<br>
+            <a href="https://coursera.org/verify/BLHI34HASF6M" target="_blank" rel="noopener">Verify ↗</a>
+          </div>
+        </div>
+        <div class="cert">
+          <span class="seal" aria-hidden="true">✓</span>
+          <div>
+            <strong>Build a Computer Vision App with Azure Cognitive Services</strong><br>Microsoft · Coursera project · May 2026<br>
+            <a href="https://coursera.org/verify/N4WMPT2M00NE" target="_blank" rel="noopener">Verify ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="note">
+      <span class="hand">Networking + OS this term, then NLP in January. Ask me about either.</span>
+    </aside>
+  </section>
+
+  <!-- contact -->
+  <section class="qedbox" id="contact">
+    <div class="eyebrow">Q.E.D.</div>
+    <h2>Let's talk.</h2>
+    <p class="lede" style="margin-top:16px">Hiring for software, data or ML roles, or just want to play a round of Do We Click? Get in touch.</p>
+    <div class="contact">
+      <div><div class="k">email</div><div class="v"><span id="email">fonghoiming8@gmail.com</span><button class="copy" type="button" id="copyEmail">copy</button></div></div>
+      <div><div class="k">github</div><div class="v"><a href="https://github.com/AngelaFong264291" target="_blank" rel="noopener">AngelaFong264291 ↗</a></div></div>
+      <div><div class="k">linkedin</div><div class="v"><a href="https://linkedin.com/in/angela-fong-68b462324" target="_blank" rel="noopener">angela-fong ↗</a></div></div>
+    </div>
+  </section>
+  <footer>
+    <span>© 2026 Angela Fong · hand-built, no template</span>
+    <span class="tomb" aria-hidden="true">∎</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Fig. 1: force-directed graph ---------- */
+  const P = [
+    ['Do We Click?','click'],['Flight Delay','p-flight'],['Synk','p-synk'],
+    ['MINDREMIND','p-mind'],['Party Game','p-party'],['Land Registry','p-land'],['221b Risk Bot','p-221b'],
+    ['Quiz Generator','p-quiz'],['Recipe API','p-recipe']
+  ];
+  const E = {
+    'Do We Click?':['React','Firebase'],
+    'Flight Delay':['PostgreSQL','SQL','CatBoost','Streamlit','Python'],
+    'Synk':['React','TypeScript','PocketBase','Docker'],
+    'Quiz Generator':['Python','Streamlit'],
+    'Recipe API':['JavaScript','REST API'],
+    'MINDREMIND':['React','Node.js'],
+    'Party Game':['Flutter','Supabase'],
+    'Land Registry':['VBA','Excel'],
+    '221b Risk Bot':['n8n','Gemini API']
+  };
+  const nodes = [], idx = {};
+  P.forEach(([n,href]) => { idx[n]=nodes.length; nodes.push({n, href, proj:true}); });
+  Object.values(E).flat().forEach(s => { if(!(s in idx)){ idx[s]=nodes.length; nodes.push({n:s, proj:false}); } });
+  const links = [];
+  for (const [p, ss] of Object.entries(E)) ss.forEach(s => links.push([idx[p], idx[s]]));
+  document.getElementById('gstats').textContent = `|V| = ${nodes.length}, |E| = ${links.length}`;
+
+  const cv = document.getElementById('g'), ctx = cv.getContext('2d');
+  let W=0, H=0, dpr=1, hover=-1, drag=-1, moved=false, alpha=1, raf=0;
+  function size(){
+    const r = cv.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio||1);
+    W = r.width; H = r.height; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  size();
+  nodes.forEach((d,i) => {
+    const a = i/nodes.length*Math.PI*2, rad = d.proj ? .22 : .38;
+    d.x = W/2 + Math.cos(a)*W*rad*(.8+Math.random()*.4);
+    d.y = H/2 + Math.sin(a)*H*rad*(.8+Math.random()*.4);
+    d.vx = 0; d.vy = 0;
+  });
+  function step(){
+    const k = Math.min(W,H)/4.6;
+    for (let i=0;i<nodes.length;i++) for (let j=i+1;j<nodes.length;j++){
+      const a=nodes[i], b=nodes[j]; let dx=b.x-a.x, dy=b.y-a.y, d2=dx*dx+dy*dy||.01;
+      const f = k*k/d2*.9; const d=Math.sqrt(d2); dx/=d; dy/=d;
+      a.vx-=dx*f*alpha*.05; a.vy-=dy*f*alpha*.05; b.vx+=dx*f*alpha*.05; b.vy+=dy*f*alpha*.05;
+    }
+    links.forEach(([i,j]) => {
+      const a=nodes[i], b=nodes[j]; const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||.01;
+      const f=(d-k*.7)*.04*alpha; a.vx+=dx/d*f; a.vy+=dy/d*f; b.vx-=dx/d*f; b.vy-=dy/d*f;
+    });
+    nodes.forEach((d,i) => {
+      d.vx += (W/2-d.x)*.0025*alpha; d.vy += (H/2-d.y)*.0025*alpha;
+      if (i===drag) { d.vx=d.vy=0; return; }
+      d.vx*=.82; d.vy*=.82; d.x+=d.vx; d.y+=d.vy;
+      const m = 34; d.x=Math.max(m,Math.min(W-m,d.x)); d.y=Math.max(30,Math.min(H-22,d.y));
+    });
+    alpha = drag>=0 ? Math.max(alpha,.3) : alpha*.992;
+  }
+  function col(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function nbrs(i){ const s=new Set([i]); links.forEach(([a,b])=>{ if(a===i)s.add(b); if(b===i)s.add(a); }); return s; }
+  function draw(){
+    const ink=col('--ink'), soft=col('--ink-soft'), pen=col('--pen'), rule=col('--rule'), sk=col('--node-skill'), paper=col('--paper');
+    ctx.clearRect(0,0,W,H);
+    const focus = hover>=0 ? nbrs(hover) : null;
+    links.forEach(([i,j]) => {
+      const a=nodes[i], b=nodes[j], on = focus && focus.has(i) && focus.has(j) && (i===hover||j===hover);
+      ctx.strokeStyle = on ? pen : (focus ? rule : soft); ctx.globalAlpha = on ? 1 : (focus ? .7 : .45);
+      ctx.lineWidth = on ? 2 : 1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+    nodes.forEach((d,i) => {
+      const dim = focus && !focus.has(i), r = d.proj ? 8 : 5.5;
+      ctx.globalAlpha = dim ? .3 : 1;
+      ctx.beginPath(); ctx.arc(d.x,d.y,r,0,Math.PI*2);
+      ctx.fillStyle = d.proj ? (i===hover ? pen : ink) : sk; ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = i===hover ? pen : ink; ctx.stroke();
+      ctx.font = d.proj ? '600 13px "STIX Two Text", Georgia, serif' : '11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      const ty = d.y + (d.proj ? -14 : 17);
+      ctx.lineWidth = 4; ctx.strokeStyle = paper; ctx.strokeText(d.n, d.x, ty);
+      ctx.fillStyle = d.proj ? ink : soft; if (i===hover) ctx.fillStyle = pen;
+      ctx.fillText(d.n, d.x, ty);
+    });
+    ctx.globalAlpha = 1;
+  }
+  function loop(){
+    step(); draw();
+    if (alpha > .02 || drag >= 0) raf = requestAnimationFrame(loop); else raf = 0;
+  }
+  function kick(a){ alpha=Math.max(alpha,a); if(!raf) raf=requestAnimationFrame(loop); }
+  if (reduce){ for(let i=0;i<600;i++) step(); alpha=0; draw(); } else kick(1);
+
+  function pick(e){
+    const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+    let best=-1, bd=22*22;
+    nodes.forEach((d,i)=>{ const dd=(d.x-x)**2+(d.y-y)**2; if(dd<bd){bd=dd;best=i;} });
+    return {i:best,x,y};
+  }
+  cv.addEventListener('pointerdown', e => {
+    const p = pick(e); if (p.i<0) return;
+    drag = p.i; moved = false; hover = p.i; cv.setPointerCapture(e.pointerId); cv.classList.add('dragging'); kick(.3);
+  });
+  cv.addEventListener('pointermove', e => {
+    const p = pick(e);
+    if (drag>=0){ const d=nodes[drag]; if (Math.hypot(d.x-p.x,d.y-p.y)>3) moved=true; d.x=p.x; d.y=p.y; if(reduce) draw(); return; }
+    if (p.i!==hover){ hover=p.i; cv.style.cursor = p.i>=0 ? (nodes[p.i].proj?'pointer':'grab') : 'default'; if(!raf) draw(); }
+  });
+  function release(){
+    if (drag<0) return;
+    const d = nodes[drag];
+    if (!moved && d.proj && d.href){
+      const el = document.getElementById(d.href);
+      if (el){ el.scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'});
+        const t = el.classList.contains('lemma') ? el : null;
+        if (t){ t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); } }
+    }
+    drag=-1; cv.classList.remove('dragging'); if (reduce){ for(let i=0;i<80;i++) step(); draw(); } else kick(.15);
+  }
+  cv.addEventListener('pointerup', release);
+  cv.addEventListener('pointercancel', release);
+  cv.addEventListener('pointerleave', () => { if (drag<0){ hover=-1; if(!raf) draw(); } });
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt=setTimeout(()=>{ size(); nodes.forEach(d=>{d.x=Math.min(d.x,W-34); d.y=Math.min(d.y,H-22);}); if(reduce){for(let i=0;i<300;i++)step(); draw();} else kick(.5); },120); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => draw());
+  new MutationObserver(() => draw()).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+  document.fonts?.ready.then(() => draw());
+
+  /* ---------- §2 scoring demo (rules from the Do We Click? proposal) ---------- */
+  const T = {
+    en:{ q1:'Which Hong Kong bun is most like you?', q2:'How sexy is a pineapple bun? (0–10)', you:'You',
+         buns:['Pineapple bun','Cocktail bun','Egg tart','Sausage bun'],
+         foot:'Each question scores 0–100: find the consensus answer, score everyone against it, then average. If nobody agrees with anybody, the question scores 0.',
+         f1:(c,n,s)=>`${c} of ${n} picked the same → ${c} ÷ ${n} = ${s}`,
+         none:'no two players agree → 0', cons:'consensus' },
+    zh:{ q1:'邊款麵包最似你？', q2:'菠蘿包有幾性感？（0–10）', you:'你',
+         buns:['菠蘿包','雞尾包','蛋撻','腸仔包'],
+         foot:'每題 0–100 分：先搵共識答案，再按每人同共識有幾接近計分，最後取平均。如果冇任何兩個人吻合，該題 0 分。',
+         f1:(c,n,s)=>`${n} 個人入面，${c} 個揀同一款 → ${c} ÷ ${n} = ${s}`,
+         none:'冇人夾 → 0 分', cons:'共識' }
+  };
+  const names = ['阿珊','阿明','阿May'];
+  const q1 = [0,0,2,0];       // last = you
+  const q2 = [7,7,8,4];
+  let lang = 'en';
+  try { const s = localStorage.getItem('dwc-lang'); if (s==='zh'||s==='en') lang = s; } catch(e){}
+
+  const sliderPts = d => d===0?100 : d===1?70 : d===2?40 : 0;
+
+  function scoreQ1(){
+    const counts = [0,0,0,0]; q1.forEach(a=>counts[a]++);
+    const c = Math.max(...counts), cons = counts.indexOf(c), n = q1.length;
+    const s = c<2 ? 0 : Math.round(c/n*100);
+    return {s, c, n, cons};
+  }
+  function scoreQ2(){
+    let best=-1, bestTot=-1;
+    for (let v=0; v<=10; v++){ const t=q2.reduce((acc,a)=>acc+sliderPts(Math.abs(a-v)),0); if(t>bestTot){bestTot=t;best=v;} }
+    const pts = q2.map(a=>sliderPts(Math.abs(a-best)));
+    const scorers = pts.filter(p=>p>0).length;
+    const s = scorers<2 ? 0 : Math.round(bestTot/q2.length);
+    return {s, pts, cons:best};
+  }
+  function render(){
+    const t = T[lang];
+    document.getElementById('q1t').textContent = t.q1;
+    document.getElementById('q2t').textContent = t.q2;
+    document.getElementById('demofoot').textContent = t.foot;
+    document.getElementById('lang-en').setAttribute('aria-pressed', lang==='en');
+    document.getElementById('lang-zh').setAttribute('aria-pressed', lang==='zh');
+
+    const r1 = scoreQ1();
+    const p1 = document.getElementById('q1p'); p1.innerHTML='';
+    q1.forEach((a,i) => {
+      const you = i===3, row = document.createElement('div'); row.className='pl'+(you?' you':'');
+      row.innerHTML = `<span class="who">${you?t.you:names[i]}</span>`;
+      const chips = document.createElement('div'); chips.className='chips';
+      if (you){
+        t.buns.forEach((b,bi) => { const btn=document.createElement('button'); btn.type='button';
+          btn.className='chip'+(bi===a?' on':''); btn.textContent=b; btn.setAttribute('aria-pressed', bi===a);
+          btn.onclick=()=>{ q1[3]=bi; render(); }; chips.appendChild(btn); });
+      } else { const c=document.createElement('span'); c.className='chip on'; c.textContent=t.buns[a]; chips.appendChild(c); }
+      row.appendChild(chips); p1.appendChild(row);
+    });
+    document.getElementById('q1s').textContent = r1.s;
+    document.getElementById('q1f').textContent = r1.c<2 ? t.none : t.f1(r1.c, r1.n, r1.s);
+
+    const r2 = scoreQ2();
+    const p2 = document.getElementById('q2p'); p2.innerHTML='';
+    q2.forEach((a,i) => {
+      const you = i===3, row = document.createElement('div'); row.className='pl'+(you?' you':'');
+      if (you){
+        row.innerHTML = `<label class="who" for="ySlider">${t.you}</label><div style="display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:10px;align-items:center"><input type="range" id="ySlider" min="0" max="10" step="1" value="${a}"><span class="val">${a} → ${r2.pts[i]}</span></div>`;
+      } else {
+        row.innerHTML = `<span class="who">${names[i]}</span><span class="val">${a} → ${r2.pts[i]}</span>`;
+      }
+      p2.appendChild(row);
+    });
+    const ys = document.getElementById('ySlider');
+    ys.oninput = e => { q2[3] = +e.target.value; updateQ2(); };
+    updateQ2();
+  }
+  function updateQ2(){
+    const t = T[lang], r2 = scoreQ2();
+    p2vals().forEach((el,i) => el.textContent = `${q2[i]} → ${r2.pts[i]}`);
+    document.getElementById('q2s').textContent = r2.s;
+    document.getElementById('q2f').textContent = r2.s===0 && r2.pts.filter(p=>p>0).length<2
+      ? t.none
+      : `${t.cons} = ${r2.cons} → (${r2.pts.join('+')}) ÷ ${q2.length} = ${r2.s}`;
+  }
+  function p2vals(){ return [...document.querySelectorAll('#q2p .val')]; }
+  function setLang(l){ lang=l; try{localStorage.setItem('dwc-lang',l);}catch(e){} render(); }
+  document.getElementById('lang-en').onclick = () => setLang('en');
+  document.getElementById('lang-zh').onclick = () => setLang('zh');
+  render();
+
+  /* ---------- copy email ---------- */
+  const cb = document.getElementById('copyEmail');
+  cb.addEventListener('click', () => {
+    const txt = document.getElementById('email').textContent;
+    const done = () => { cb.textContent='copied'; setTimeout(()=>cb.textContent='copy',1600); };
+    const fallback = () => { const r=document.createRange(); r.selectNodeContents(document.getElementById('email')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); cb.textContent='press ⌘/Ctrl+C'; };
+    try { navigator.clipboard.writeText(txt).then(done, fallback); } catch(e){ fallback(); }
+  });
+})();
+</script>
+</body>
+</html>
